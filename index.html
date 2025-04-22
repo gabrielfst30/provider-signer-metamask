@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  </head>
+  <body>
+    <h1>Ethers.js - Metamask como provedor</h1>
+    <button id="connect">Connect Wallet</button>
+    <p><strong>Address:</strong> <span id="address">empty</span></p>
+    <p><strong>Balance:</strong> <span id="balance">0</span></p>
+
+    <script>
+      console.log("Metamask", window.ethereum);
+      console.log("ethers:", ethers);
+
+      //Conectando a um provedor metamask
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      console.log(provider);
+
+      //linkando buttons
+      const connectBtn = document.querySelector("#connect");
+      const addressField = document.querySelector("#address");
+      const balanceField = document.querySelector("#balance");
+
+      //conectando a metamask
+      connectBtn.addEventListener("click", async () => {
+        //requisitando solicitação para conexão da carteira, usando await porque a requisição espera a resolução
+        await provider.send("eth_requestAccounts", []); //array vazio para selecionar a primeira account da carteira
+
+        //exibindo network que estamos conectados
+        const network = await provider.getNetwork();
+        console.log("network", network);
+
+        //pegando a assinatura da minha carteira conectada ao metamask
+        const signer = provider.getSigner();
+        console.log("signer: ", signer);
+
+        //pegando o balanço e endereço da minha carteira
+        const balance = await signer.getBalance();
+        const address = await signer.getAddress();
+
+        //retirando formatação do bigNumber
+        console.log("balance: ", ethers.utils.formatEther(balance));
+        console.log("address: ", address);
+
+        //Verificação de conexão da carteira
+        const isConnected = signer != undefined;
+
+        if (isConnected) {
+          //interaçoes com html
+          connectBtn.textContent = "connected";
+          balanceField.textContent = ethers.utils.formatEther(balance);
+          addressField.textContent = address;
+        }
+      });
+    </script>
+  </body>
+</html>
